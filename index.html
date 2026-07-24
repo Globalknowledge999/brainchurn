@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Brainchurn turns a problem into evaluated solutions through a layered ideation methodology: Frame, Diverge, Break, Cover, Converge, Result.">
-<meta name="theme-color" content="#232d4d">
+<meta name="theme-color" content="#312e81">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brainchurn">
@@ -32,32 +32,33 @@
 </script>
 <style>
   :root{
-    --bg:#f2f4f9; --card:#ffffff; --ink:#1c2433; --muted:#5d6a84; --line:#e2e6f0; --soft:#eef1f8;
-    --heading:#2d3a5e; --brand:#2d3a5e; --brand-ink:#ffffff;
-    --amber:#e0883c; --amber-ink:#2b1c05;
-    --good:#2e8b6f; --danger:#b5462f;
-    --hdr1:#2b3760; --hdr2:#3d4f7d; --hdr-ctl:rgba(255,255,255,.09); --hdr-line:rgba(255,255,255,.22);
-    --strip:#26314f; --strip-btn:#33406a; --strip-ink:#cdd6ea; --strip-n:#4a5a86;
-    --chip-bg:#eef1f8; --chip-line:#d5dcea; --chip-ink:#33406e;
-    --sug-bg:#fbf1e5; --sug-line:#efd5b4; --sug-ink:#8a5a1c;
-    --prompt-bg:#f7f9fc; --field-bg:#ffffff;
-    --shadow:0 1px 2px rgba(20,30,60,.05), 0 10px 28px -14px rgba(20,30,60,.18);
-    --shadow-sm:0 1px 2px rgba(20,30,60,.06);
-    --tot:#c1701f;
+    /* Confident but calmer — cool neutral canvas, deep indigo primary, muted ochre accent */
+    --bg:#f4f5f9; --card:#ffffff; --ink:#232734; --muted:#5f687e; --line:#e4e7f0; --soft:#edf0f7;
+    --heading:#312e81; --brand:#4f46e5; --brand-ink:#ffffff;
+    --amber:#c98a3f; --amber-ink:#2a1c05;
+    --good:#2f9e73; --danger:#c0433a;
+    --hdr1:#312e81; --hdr2:#4f46e5; --hdr-ctl:rgba(255,255,255,.12); --hdr-line:rgba(255,255,255,.26);
+    --strip:#eef0f8; --strip-btn:#e2e6f4; --strip-ink:#414a72; --strip-n:#c4cbe6;
+    --chip-bg:#eef0f8; --chip-line:#dde2f0; --chip-ink:#3f4772;
+    --sug-bg:#f7f1e6; --sug-line:#ecd9b8; --sug-ink:#8a5f1e;
+    --prompt-bg:#f6f7fb; --field-bg:#ffffff;
+    --shadow:0 1px 2px rgba(30,34,60,.05), 0 12px 30px -16px rgba(30,34,60,.20);
+    --shadow-sm:0 1px 2px rgba(30,34,60,.07);
+    --tot:#b06a1e;
   }
   :root[data-theme=dark]{
-    --bg:#0e1220; --card:#171d31; --ink:#e6eaf5; --muted:#96a1c0; --line:#293251; --soft:#202944;
-    --heading:#aebcf0; --brand:#46578f; --brand-ink:#ffffff;
-    --amber:#e69a52; --amber-ink:#2b1c05;
-    --good:#3fae8c; --danger:#c9573e;
-    --hdr1:#141a2f; --hdr2:#232d4d; --hdr-ctl:rgba(255,255,255,.07); --hdr-line:rgba(255,255,255,.18);
-    --strip:#101627; --strip-btn:#1d2540; --strip-ink:#aab6d6; --strip-n:#2e3a60;
-    --chip-bg:#202944; --chip-line:#33406a; --chip-ink:#c3cdea;
-    --sug-bg:#2b2438; --sug-line:#54446a; --sug-ink:#e3b784;
-    --prompt-bg:#131a2d; --field-bg:#10162a;
-    --shadow:0 1px 2px rgba(0,0,0,.35), 0 12px 30px -14px rgba(0,0,0,.55);
-    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
-    --tot:#e6a55f;
+    --bg:#12141f; --card:#1b1e2e; --ink:#e7e9f2; --muted:#9aa2ba; --line:#2c3149; --soft:#232841;
+    --heading:#c3c0f5; --brand:#6d67e8; --brand-ink:#ffffff;
+    --amber:#d8a458; --amber-ink:#2a1c05;
+    --good:#3bb489; --danger:#d1564c;
+    --hdr1:#211d55; --hdr2:#3a338f; --hdr-ctl:rgba(255,255,255,.09); --hdr-line:rgba(255,255,255,.20);
+    --strip:#161927; --strip-btn:#232840; --strip-ink:#aab2d0; --strip-n:#333a5c;
+    --chip-bg:#232841; --chip-line:#343c5c; --chip-ink:#c2c8e6;
+    --sug-bg:#2c2717; --sug-line:#524524; --sug-ink:#e2b877;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -18px rgba(0,0,0,.6);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+    --prompt-bg:#171a29; --field-bg:#141726;
+    --tot:#e0a860;
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -72,7 +73,7 @@
 
   /* ---------- header ---------- */
   header{
-    background:linear-gradient(120deg,var(--hdr1),var(--hdr2));
+    background:linear-gradient(118deg,var(--hdr1),var(--hdr2));
     color:#fff; padding:14px 16px;
     padding-left:calc(16px + env(safe-area-inset-left));
     padding-right:calc(16px + env(safe-area-inset-right));
@@ -82,8 +83,8 @@
     box-shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 6px 20px -10px rgba(0,0,10,.45);
   }
   .htop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .logo{font-size:20px;font-weight:800;letter-spacing:.6px}
-  .logo b{color:var(--amber)}
+  .logo{font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display",Nunito,system-ui,sans-serif;font-size:21px;font-weight:800;letter-spacing:.2px}
+  .logo b{color:#f0c274;font-weight:800}
   .tag{font-size:12px;opacity:.85;flex:1;min-width:140px}
   .hctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .hctl input,.hctl select{
@@ -132,12 +133,12 @@
   .panel{display:none}
   .panel.show{display:block;animation:rise .28s cubic-bezier(.2,.7,.3,1)}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  h2{font-size:22px;font-weight:750;letter-spacing:-.01em;color:var(--heading);margin:6px 0 2px}
+  h2{font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display",Nunito,system-ui,sans-serif;font-size:24px;font-weight:800;letter-spacing:-.01em;color:var(--heading);margin:6px 0 2px}
   .sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
   h3{font-size:14.5px;font-weight:700;color:var(--heading);margin:18px 0 6px}
   label.fld{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:12px 0 4px}
   textarea,input.t{
-    width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;
+    width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;
     font-size:14.5px;background:var(--field-bg);color:var(--ink);
     transition:border-color .15s, box-shadow .15s;
   }
@@ -145,14 +146,14 @@
   textarea{resize:vertical;min-height:54px}
   textarea::placeholder,input.t::placeholder{color:var(--muted);opacity:.7}
   .card{
-    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;
+    background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;
     box-shadow:var(--shadow);transition:background .25s ease,border-color .25s ease;
   }
 
   /* ---------- buttons ---------- */
   .btn{
-    background:var(--brand);color:var(--brand-ink);border:none;border-radius:10px;padding:10px 16px;
-    font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:var(--shadow-sm);
+    background:var(--brand);color:var(--brand-ink);border:none;border-radius:12px;padding:10px 17px;
+    font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:var(--shadow-sm);
     transition:filter .15s, transform .1s, box-shadow .15s;
   }
   .btn:hover{filter:brightness(1.12)}
@@ -182,7 +183,7 @@
     border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13.5px;
   }
   .prompt b{color:var(--heading)}
-  .idea{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:9px 0;background:var(--card);box-shadow:var(--shadow-sm)}
+  .idea{border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:9px 0;background:var(--card);box-shadow:var(--shadow-sm)}
   .idea h4{margin:0 0 4px;font-size:14px;color:var(--heading)}
   .src{font-size:11px;color:var(--muted)}
   .src a{color:var(--muted)}
@@ -197,7 +198,7 @@
   select.t{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:14px;background:var(--field-bg);color:var(--ink)}
   .navbtns{display:flex;justify-content:space-between;margin-top:18px;gap:10px}
   .rank{
-    border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:9px 0;background:var(--card);
+    border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:9px 0;background:var(--card);
     display:flex;gap:12px;align-items:flex-start;box-shadow:var(--shadow-sm);
   }
   .rank .badge{
@@ -230,7 +231,7 @@
 <body>
 <header>
   <div class="htop">
-    <div class="logo">STRAT<b>A</b></div>
+    <div class="logo">Brain<b>churn</b></div>
     <div class="tag">turn a problem into evaluated solutions, layer by layer</div>
     <div class="hctl">
       <input class="t proj" id="projName" placeholder="Project name" aria-label="Project name" style="width:150px">

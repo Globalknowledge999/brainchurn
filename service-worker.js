@@ -5,7 +5,7 @@
    - Other same-origin GETs (icons, manifest): cache-first.
    - Cross-origin calls (e.g. the Datamuse open-data API) are never cached
      and always go to the network. */
-const CACHE = "brainchurn-v3";
+const CACHE = "brainchurn-v6";
 const SHELL = [
   "./",
   "index.html",
