@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Brainchurn turns a problem into evaluated solutions through a layered ideation methodology: Frame, Diverge, Break, Cover, Converge, Result.">
+<meta name="theme-color" content="#232d4d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brainchurn">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Brainchurn — idea methodology</title>
+<script>
+/* One-time migration: adopt saved data from the old "Strata" name. */
+(function(){try{
+  var pairs=[["strata_v1","brainchurn_v1"],["strata_theme","brainchurn_theme"]];
+  for(var i=0;i<pairs.length;i++){
+    var oldK=pairs[i][0],newK=pairs[i][1],v=localStorage.getItem(oldK);
+    if(v!==null&&localStorage.getItem(newK)===null)localStorage.setItem(newK,v);
+  }
+}catch(e){}})();
+</script>
+<script>
+/* Apply theme before first paint to avoid a flash */
+(function(){try{
+  var t=localStorage.getItem("brainchurn_theme");
+  if(t!=="dark"&&t!=="light")t=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  document.documentElement.dataset.theme=t;
+}catch(e){document.documentElement.dataset.theme="light";}})();
+</script>
+<style>
+  :root{
+    --bg:#f2f4f9; --card:#ffffff; --ink:#1c2433; --muted:#5d6a84; --line:#e2e6f0; --soft:#eef1f8;
+    --heading:#2d3a5e; --brand:#2d3a5e; --brand-ink:#ffffff;
+    --amber:#e0883c; --amber-ink:#2b1c05;
+    --good:#2e8b6f; --danger:#b5462f;
+    --hdr1:#2b3760; --hdr2:#3d4f7d; --hdr-ctl:rgba(255,255,255,.09); --hdr-line:rgba(255,255,255,.22);
+    --strip:#26314f; --strip-btn:#33406a; --strip-ink:#cdd6ea; --strip-n:#4a5a86;
+    --chip-bg:#eef1f8; --chip-line:#d5dcea; --chip-ink:#33406e;
+    --sug-bg:#fbf1e5; --sug-line:#efd5b4; --sug-ink:#8a5a1c;
+    --prompt-bg:#f7f9fc; --field-bg:#ffffff;
+    --shadow:0 1px 2px rgba(20,30,60,.05), 0 10px 28px -14px rgba(20,30,60,.18);
+    --shadow-sm:0 1px 2px rgba(20,30,60,.06);
+    --tot:#c1701f;
+  }
+  :root[data-theme=dark]{
+    --bg:#0e1220; --card:#171d31; --ink:#e6eaf5; --muted:#96a1c0; --line:#293251; --soft:#202944;
+    --heading:#aebcf0; --brand:#46578f; --brand-ink:#ffffff;
+    --amber:#e69a52; --amber-ink:#2b1c05;
+    --good:#3fae8c; --danger:#c9573e;
+    --hdr1:#141a2f; --hdr2:#232d4d; --hdr-ctl:rgba(255,255,255,.07); --hdr-line:rgba(255,255,255,.18);
+    --strip:#101627; --strip-btn:#1d2540; --strip-ink:#aab6d6; --strip-n:#2e3a60;
+    --chip-bg:#202944; --chip-line:#33406a; --chip-ink:#c3cdea;
+    --sug-bg:#2b2438; --sug-line:#54446a; --sug-ink:#e3b784;
+    --prompt-bg:#131a2d; --field-bg:#10162a;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 12px 30px -14px rgba(0,0,0,.55);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --tot:#e6a55f;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    font-family:ui-sans-serif,-apple-system,"Segoe UI Variable Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.55; font-size:15.5px;
+    transition:background .25s ease, color .25s ease;
+  }
+  ::selection{background:var(--amber); color:var(--amber-ink)}
+  :focus-visible{outline:2px solid var(--amber); outline-offset:2px; border-radius:6px}
+
+  /* ---------- header ---------- */
+  header{
+    background:linear-gradient(120deg,var(--hdr1),var(--hdr2));
+    color:#fff; padding:14px 16px;
+    padding-left:calc(16px + env(safe-area-inset-left));
+    padding-right:calc(16px + env(safe-area-inset-right));
+    padding-top:calc(14px + env(safe-area-inset-top));
+    position:sticky; top:0; z-index:20;
+    backdrop-filter:saturate(140%) blur(10px); -webkit-backdrop-filter:saturate(140%) blur(10px);
+    box-shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 6px 20px -10px rgba(0,0,10,.45);
+  }
+  .htop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .logo{font-size:20px;font-weight:800;letter-spacing:.6px}
+  .logo b{color:var(--amber)}
+  .tag{font-size:12px;opacity:.85;flex:1;min-width:140px}
+  .hctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .hctl input,.hctl select{
+    border:1px solid var(--hdr-line);background:var(--hdr-ctl);color:#fff;
+    border-radius:9px;padding:7px 10px;font:inherit;font-size:12.5px;transition:border-color .15s,background .15s;
+  }
+  .hctl input::placeholder{color:rgba(255,255,255,.55)}
+  .hctl input:focus,.hctl select:focus{border-color:var(--amber)}
+  .hctl select option{color:#1c2433;background:#fff}
+  .hbtn{
+    background:var(--hdr-ctl);border:1px solid var(--hdr-line);color:#fff;border-radius:9px;
+    padding:7px 11px;font-size:12.5px;cursor:pointer;transition:background .15s,transform .1s;
+  }
+  .hbtn:hover{background:rgba(255,255,255,.18)}
+  .hbtn:active{transform:translateY(1px)}
+  #themeBtn{font-size:14px;line-height:1;padding:7px 10px}
+
+  /* ---------- stepper ---------- */
+  .stepper{
+    display:flex;gap:6px;overflow-x:auto;padding:10px 16px;background:var(--strip);
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    padding-left:calc(16px + env(safe-area-inset-left));
+    padding-right:calc(16px + env(safe-area-inset-right));
+  }
+  .stepper::-webkit-scrollbar{display:none}
+  .stepper button{
+    flex:0 0 auto;background:var(--strip-btn);color:var(--strip-ink);border:none;border-radius:20px;
+    padding:7px 13px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;
+    transition:background .15s,color .15s,transform .12s;
+  }
+  .stepper button:hover{transform:translateY(-1px)}
+  .stepper button .n{
+    display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;
+    background:var(--strip-n);border-radius:50%;font-size:11px;margin-right:6px;transition:background .15s,color .15s;
+  }
+  .stepper button.active{background:var(--amber);color:var(--amber-ink)}
+  .stepper button.active .n{background:var(--amber-ink);color:var(--amber)}
+  .stepper button.done .n{background:var(--good);color:#fff}
+
+  /* ---------- layout ---------- */
+  main{
+    max-width:860px;margin:0 auto;padding:20px 16px calc(90px + env(safe-area-inset-bottom));
+    padding-left:calc(16px + env(safe-area-inset-left));
+    padding-right:calc(16px + env(safe-area-inset-right));
+  }
+  .panel{display:none}
+  .panel.show{display:block;animation:rise .28s cubic-bezier(.2,.7,.3,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h2{font-size:22px;font-weight:750;letter-spacing:-.01em;color:var(--heading);margin:6px 0 2px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  h3{font-size:14.5px;font-weight:700;color:var(--heading);margin:18px 0 6px}
+  label.fld{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+  textarea,input.t{
+    width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;
+    font-size:14.5px;background:var(--field-bg);color:var(--ink);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  textarea:focus,input.t:focus,select.t:focus{border-color:var(--amber);box-shadow:0 0 0 3px color-mix(in srgb, var(--amber) 22%, transparent);outline:none}
+  textarea{resize:vertical;min-height:54px}
+  textarea::placeholder,input.t::placeholder{color:var(--muted);opacity:.7}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;
+    box-shadow:var(--shadow);transition:background .25s ease,border-color .25s ease;
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    background:var(--brand);color:var(--brand-ink);border:none;border-radius:10px;padding:10px 16px;
+    font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:var(--shadow-sm);
+    transition:filter .15s, transform .1s, box-shadow .15s;
+  }
+  .btn:hover{filter:brightness(1.12)}
+  .btn:active{transform:translateY(1px)}
+  .btn.amber{background:var(--amber);color:var(--amber-ink)}
+  .btn.ghost{background:var(--soft);color:var(--heading);border:1px solid var(--line);box-shadow:none}
+  .btn.sm{padding:7px 12px;font-size:12.5px}
+  .btn.danger{background:var(--danger);color:#fff}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+  /* ---------- chips ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+  .chip{
+    background:var(--chip-bg);border:1px solid var(--chip-line);color:var(--chip-ink);border-radius:18px;
+    padding:5px 12px;font-size:13px;cursor:pointer;user-select:none;
+    transition:background .15s,transform .12s,border-color .15s;
+  }
+  .chip:hover{transform:translateY(-1px)}
+  .chip.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+  .chip .x{margin-left:7px;opacity:.6;font-weight:700}
+  .chip .x:hover{opacity:1}
+  .chip.sug{background:var(--sug-bg);border-color:var(--sug-line);color:var(--sug-ink)}
+
+  /* ---------- content blocks ---------- */
+  .prompt{
+    background:var(--prompt-bg);border:1px solid var(--line);border-left:4px solid var(--amber);
+    border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13.5px;
+  }
+  .prompt b{color:var(--heading)}
+  .idea{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:9px 0;background:var(--card);box-shadow:var(--shadow-sm)}
+  .idea h4{margin:0 0 4px;font-size:14px;color:var(--heading)}
+  .src{font-size:11px;color:var(--muted)}
+  .src a{color:var(--muted)}
+  .scorerow{display:flex;align-items:center;gap:8px;font-size:12px;margin:4px 0;color:var(--muted)}
+  .scorerow span.lab{flex:0 0 96px}
+  .scorerow input[type=range]{flex:1;min-width:80px;accent-color:var(--amber);cursor:pointer}
+  .scoreval{width:18px;text-align:right;font-weight:700;color:var(--heading)}
+  .tot{font-weight:800;color:var(--tot)}
+  .empty{color:var(--muted);font-style:italic;font-size:13px}
+  .hint{font-size:12px;color:var(--muted)}
+  .pill{display:inline-block;background:var(--brand);color:var(--brand-ink);border-radius:6px;font-size:11px;padding:2px 8px;margin-right:6px}
+  select.t{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:14px;background:var(--field-bg);color:var(--ink)}
+  .navbtns{display:flex;justify-content:space-between;margin-top:18px;gap:10px}
+  .rank{
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:9px 0;background:var(--card);
+    display:flex;gap:12px;align-items:flex-start;box-shadow:var(--shadow-sm);
+  }
+  .rank .badge{
+    flex:0 0 38px;height:38px;border-radius:50%;background:var(--brand);color:var(--brand-ink);
+    font-weight:800;display:flex;align-items:center;justify-content:center;
+  }
+  .rank.win .badge{background:var(--amber);color:var(--amber-ink)}
+  details.prov{margin-top:24px;font-size:12.5px;color:var(--muted)}
+  details.prov summary{cursor:pointer;font-weight:600;color:var(--heading)}
+  .banner{
+    background:var(--sug-bg);border:1px solid var(--sug-line);border-radius:10px;
+    padding:9px 12px;font-size:12.5px;color:var(--sug-ink);margin-bottom:12px;
+  }
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,16px);
+    background:var(--heading);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:13.5px;font-weight:600;
+    box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:50;
+    max-width:88vw;text-align:center;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media(max-width:560px){.tag{display:none}.hctl input.proj{width:110px}}
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <div class="logo">STRAT<b>A</b></div>
+    <div class="tag">turn a problem into evaluated solutions, layer by layer</div>
+    <div class="hctl">
+      <input class="t proj" id="projName" placeholder="Project name" aria-label="Project name" style="width:150px">
+      <select id="engineSel" title="Idea source" aria-label="Idea engine">
+        <option value="offline">Engine: Offline</option>
+        <option value="open">Engine: Open data</option>
+        <option value="ai">Engine: AI bridge</option>
+      </select>
+      <button class="hbtn" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">◐</button>
+      <button class="hbtn" id="resetBtn">Reset</button>
+    </div>
+  </div>
+</header>
+
+<nav class="stepper" id="stepper" aria-label="Methodology steps">
+  <button data-s="frame" class="active"><span class="n">0</span>Frame</button>
+  <button data-s="diverge"><span class="n">1</span>Diverge</button>
+  <button data-s="break"><span class="n">2</span>Break</button>
+  <button data-s="cover"><span class="n">3</span>Cover</button>
+  <button data-s="converge"><span class="n">4</span>Converge</button>
+  <button data-s="result"><span class="n">5</span>Result</button>
+</nav>
+
+<main>
+  <!-- 0 FRAME -->
+  <section class="panel show" id="p-frame">
+    <h2>0 · Frame the problem</h2>
+    <p class="sub">Get the problem right before generating anything. A sharp frame is worth more than a hundred ideas.</p>
+    <div class="card">
+      <label class="fld" for="f-challenge">The challenge — one concrete sentence</label>
+      <textarea id="f-challenge" placeholder="e.g. Older customers find our checkout confusing and abandon their carts."></textarea>
+      <label class="fld" for="f-who">Who is it for / who's affected?</label>
+      <input class="t" id="f-who" placeholder="e.g. first-time customers aged 60+, on mobile">
+      <label class="fld" for="f-constraints">Hard constraints (optional)</label>
+      <input class="t" id="f-constraints" placeholder="e.g. no new login step; ship in 6 weeks">
+      <label class="fld" for="f-hmw">Reframe as an opportunity — "How might we …?"</label>
+      <div class="row">
+        <input class="t" id="f-hmw" placeholder="How might we…" style="flex:1;min-width:200px">
+        <button class="btn ghost sm" id="f-suggestHmw">Suggest reframes</button>
+      </div>
+      <div id="f-hmwSug" class="chips"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn amber" id="f-lock">Set frame &amp; extract seed terms →</button>
+      </div>
+      <label class="fld" for="f-seedInput">Seed terms (edit freely — these feed Diverge)</label>
+      <div class="row"><input class="t" id="f-seedInput" placeholder="add a term + Enter" style="flex:1"><button class="btn sm ghost" id="f-seedAdd">Add</button></div>
+      <div id="f-seeds" class="chips"><span class="empty">No seed terms yet.</span></div>
+    </div>
+  </section>
+
+  <!-- 1 DIVERGE -->
+  <section class="panel" id="p-diverge">
+    <h2>1 · Diverge — gather sparks</h2>
+    <p class="sub">For each seed term, pull in associated concepts. Judgment OFF — quantity now, quality later.</p>
+    <div id="d-banner"></div>
+    <div class="card">
+      <label class="fld">Seed terms</label>
+      <div id="d-seeds" class="chips"><span class="empty">Set a frame in step 0 first.</span></div>
+      <div id="d-engineArea"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Spark pool <span class="hint" id="d-count"></span></h3>
+      <div class="row"><input class="t" id="d-sparkInput" placeholder="add your own spark + Enter" aria-label="Add a spark" style="flex:1"><button class="btn sm ghost" id="d-sparkAdd">Add</button></div>
+      <div id="d-sparks" class="chips"><span class="empty">Empty — add sparks above.</span></div>
+    </div>
+  </section>
+
+  <!-- 2 BREAK -->
+  <section class="panel" id="p-break">
+    <h2>2 · Break convention</h2>
+    <p class="sub">Force the non-obvious. Collide distant sparks and apply provocations; capture whatever ideas they suggest.</p>
+    <div class="card">
+      <h3 style="margin-top:0">Random collision</h3>
+      <div class="row"><button class="btn amber sm" id="b-collide">🎲 Collide two sparks</button><span id="b-pair" class="hint">— add sparks in step 1 first.</span></div>
+      <textarea id="b-collideIdea" placeholder="The idea this collision suggests…" aria-label="Collision idea" style="margin-top:8px"></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn sm" id="b-collideAdd">+ Capture idea</button></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Provocations</h3>
+      <div id="b-provs"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Ideas so far <span class="hint" id="b-count"></span></h3>
+      <div id="b-ideas"><span class="empty">No ideas captured yet.</span></div>
+    </div>
+  </section>
+
+  <!-- 3 COVER -->
+  <section class="panel" id="p-cover">
+    <h2>3 · Cover the space</h2>
+    <p class="sub">Make sure you haven't missed combinations. Define a few dimensions, list options for each, then assemble combinations into ideas.</p>
+    <div class="card">
+      <h3 style="margin-top:0">Dimensions</h3>
+      <div class="row"><input class="t" id="c-paramInput" placeholder="add a dimension (e.g. 'who delivers it') + Enter" aria-label="Add a dimension" style="flex:1"><button class="btn sm ghost" id="c-paramAdd">Add</button></div>
+      <div id="c-params"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Assemble a combination</h3>
+      <div id="c-combo"><span class="empty">Add at least one dimension with options above.</span></div>
+    </div>
+  </section>
+
+  <!-- 4 CONVERGE -->
+  <section class="panel" id="p-converge">
+    <h2>4 · Converge — judge honestly</h2>
+    <p class="sub">Now judgment ON. Score every candidate, and try to dissolve the key trade-off rather than accept it.</p>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">Score the candidates</h3>
+        <button class="btn ghost sm" id="v-sort">Sort by score</button>
+      </div>
+      <p class="hint">Each criterion 0–5. Total out of 25.</p>
+      <div id="v-ideas"><span class="empty">No candidates yet — generate some in steps 2–3.</span></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Dissolve a trade-off</h3>
+      <p class="hint">Pick an idea, name the contradiction (improving X worsens Y), then try the resolution lenses.</p>
+      <div class="row"><select class="t" id="v-cIdea" aria-label="Idea to refine" style="flex:1;min-width:160px"></select></div>
+      <input class="t" id="v-tradeoff" placeholder="The trade-off: we want more ___ but that costs us ___" aria-label="The trade-off" style="margin-top:8px">
+      <div id="v-resolvers"></div>
+      <div class="row" style="margin-top:8px"><input class="t" id="v-refined" placeholder="Refined idea that beats the trade-off + Enter" aria-label="Refined idea" style="flex:1"><button class="btn sm" id="v-refinedAdd">+ Add</button></div>
+    </div>
+  </section>
+
+  <!-- 5 RESULT -->
+  <section class="panel" id="p-result">
+    <h2>5 · Result</h2>
+    <p class="sub">The end product: your shortlist, ranked, with the framed problem and next steps — ready to export.</p>
+    <div class="card">
+      <div class="row" style="gap:8px">
+        <button class="btn amber sm" id="r-md">⤓ Download report (.md)</button>
+        <button class="btn sm" id="r-html">⤓ Download report (.html)</button>
+        <button class="btn ghost sm" id="r-copy">Copy report</button>
+      </div>
+      <div id="r-preview" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <div class="navbtns">
+    <button class="btn ghost sm" id="navPrev">← Back</button>
+    <button class="btn sm" id="navNext">Next →</button>
+  </div>
+
+  <details class="prov">
+    <summary>About &amp; provenance</summary>
+    <p>Brainchurn implements general, non-proprietary creativity techniques (problem framing, divergent association, lateral provocation, morphological combination, weighted evaluation, contradiction-resolution heuristics). It contains <b>no third-party word database</b> and reuses no copyrighted text. The optional "Open data" engine queries the free <b>Datamuse</b> API live; the "AI bridge" uses your own AI; "Offline" uses only your input. Working name "Brainchurn" is a placeholder pending a trademark search. Not affiliated with any existing product.</p>
+  </details>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const STEPS=["frame","diverge","break","cover","converge","result"];
+  const ENGINES=["offline","open","ai"];
+  const CRITERIA=[["impact","Impact"],["feasible","Feasible"],["original","Original"],["fit","Fits user"],["evidence","Evidence"]];
+  const LIMITS={seeds:100,sparks:500,ideas:300,params:30,opts:40,term:80,text:2000};
+  const PROVS=[
+    ["Reverse it","What if you did the exact opposite of the obvious approach?"],
+    ["Exaggerate","Push it to an absurd extreme — 10x bigger, instant, free. What survives?"],
+    ["Remove","Delete the most essential part. What has to change?"],
+    ["Borrow","How does another industry or nature solve a similar problem?"]
+  ];
+  const RESOLVERS=[
+    "Separate the conflicting needs in time (do each at a different moment).",
+    "Separate them in space (handle each in a different place or layer).",
+    "Separate by condition (one behaviour for case A, another for case B).",
+    "Combine the two into one element that serves both.",
+    "Invert — make the 'problem' part do the work.",
+    "Add a cheap intermediary that absorbs the conflict.",
+    "Make it self-acting (the system handles it without extra effort).",
+    "Use a free or existing resource you're currently ignoring."
+  ];
+
+  /* ---------- toast ---------- */
+  let toastT;
+  function toast(msg){
+    const t=$("toast");t.textContent=msg;t.classList.add("show");
+    clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2600);
+  }
+
+  /* ---------- state (validated against corruption) ---------- */
+  const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
+  function blank(){return{name:"",engine:"offline",frame:{challenge:"",who:"",constraints:"",hmw:"",seeds:[]},sparks:[],ideas:[],params:[],step:"frame"};}
+  function clampStr(v,n){return typeof v==="string"?v.slice(0,n||LIMITS.text):"";}
+  function sane(x){
+    const s=blank();
+    if(!x||typeof x!=="object"||Array.isArray(x))return s;
+    s.name=clampStr(x.name,120);
+    s.engine=ENGINES.includes(x.engine)?x.engine:"offline";
+    s.step=STEPS.includes(x.step)?x.step:"frame";
+    if(x.frame&&typeof x.frame==="object"){
+      s.frame.challenge=clampStr(x.frame.challenge);
+      s.frame.who=clampStr(x.frame.who,300);
+      s.frame.constraints=clampStr(x.frame.constraints,300);
+      s.frame.hmw=clampStr(x.frame.hmw,500);
+      if(Array.isArray(x.frame.seeds))s.frame.seeds=x.frame.seeds.filter(w=>typeof w==="string"&&w.trim()).map(w=>w.slice(0,LIMITS.term)).slice(0,LIMITS.seeds);
+    }
+    if(Array.isArray(x.sparks))s.sparks=x.sparks.filter(w=>typeof w==="string"&&w.trim()).map(w=>w.slice(0,LIMITS.term)).slice(0,LIMITS.sparks);
+    if(Array.isArray(x.ideas))s.ideas=x.ideas
+      .filter(i=>i&&typeof i==="object"&&typeof i.text==="string"&&i.text.trim())
+      .slice(0,LIMITS.ideas)
+      .map(i=>{
+        const scores={};
+        CRITERIA.forEach(([k])=>{
+          let v=(i.scores&&typeof i.scores==="object")?+i.scores[k]:0;
+          if(!isFinite(v))v=0;
+          scores[k]=Math.max(0,Math.min(5,Math.round(v)));
+        });
+        return{id:typeof i.id==="string"?i.id.slice(0,24):uid(),text:i.text.slice(0,LIMITS.text),source:clampStr(i.source,120)||"manual",scores};
+      });
+    if(Array.isArray(x.params))s.params=x.params
+      .filter(p=>p&&typeof p==="object"&&typeof p.name==="string"&&p.name.trim())
+      .slice(0,LIMITS.params)
+      .map(p=>({id:typeof p.id==="string"?p.id.slice(0,24):uid(),name:p.name.slice(0,LIMITS.term),
+        opts:Array.isArray(p.opts)?p.opts.filter(o=>typeof o==="string"&&o.trim()).map(o=>o.slice(0,LIMITS.term)).slice(0,LIMITS.opts):[]}));
+    return s;
+  }
+  let S=blank();
+  try{const r=localStorage.getItem("brainchurn_v1");if(r)S=sane(JSON.parse(r));}catch(e){/* corrupted store — start fresh */}
+  let quotaWarned=false;
+  const save=()=>{try{localStorage.setItem("brainchurn_v1",JSON.stringify(S));}catch(e){if(!quotaWarned){quotaWarned=true;toast("⚠ Couldn't save — storage is full or blocked. Export your report to keep your work.");}}};
+  const esc=s=>(s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  /* ---------- theme ---------- */
+  function applyTheme(t){
+    document.documentElement.dataset.theme=t;
+    try{localStorage.setItem("brainchurn_theme",t);}catch(e){}
+  }
+  $("themeBtn").addEventListener("click",()=>{
+    applyTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");
+  });
+  if(window.matchMedia){
+    try{
+      matchMedia("(prefers-color-scheme: dark)").addEventListener("change",e=>{
+        let manual=null;try{manual=localStorage.getItem("brainchurn_theme");}catch(err){}
+        if(!manual)document.documentElement.dataset.theme=e.matches?"dark":"light";
+      });
+    }catch(e){}
+  }
+
+  /* ---------- clipboard (with fallback) ---------- */
+  function copyText(text,btn,idle){
+    const ok=()=>{if(btn){btn.textContent="Copied ✓";setTimeout(()=>btn.textContent=idle,1200);}};
+    const fail=()=>toast("Copy failed — select and copy manually.");
+    function legacy(){
+      try{
+        const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;opacity:0";
+        document.body.appendChild(ta);ta.select();const done=document.execCommand("copy");ta.remove();return done;
+      }catch(e){return false;}
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(ok).catch(()=>{legacy()?ok():fail();});
+    }else{legacy()?ok():fail();}
+  }
+
+  /* ---------- engine ---------- */
+  const Engine={
+    async associate(term){
+      if(S.engine==="open"){
+        try{
+          const ac=new AbortController();const to=setTimeout(()=>ac.abort(),7000);
+          const u="https://api.datamuse.com/words?max=24&rel_trg="+encodeURIComponent(term);
+          const r=await fetch(u,{signal:ac.signal});clearTimeout(to);
+          if(!r.ok)throw new Error("HTTP "+r.status);
+          const j=await r.json();
+          if(!Array.isArray(j))throw new Error("bad payload");
+          const have=new Set(S.sparks.map(s=>s.toLowerCase()));
+          return j.map(x=>x&&x.word).filter(w=>typeof w==="string"&&w&&w.toLowerCase()!==term.toLowerCase()&&!have.has(w.toLowerCase())).slice(0,24);
+        }catch(e){return{error:"Couldn't reach the open-data service. Check your connection, or switch the engine to Offline / AI."};}
+      }
+      return null; // offline & ai handled in UI
+    }
+  };
+
+  /* ---------- navigation ---------- */
+  function show(step){
+    if(!STEPS.includes(step))step="frame";
+    S.step=step;save();
+    document.querySelectorAll("#stepper button").forEach(b=>{
+      const on=b.dataset.s===step;
+      b.classList.toggle("active",on);
+      if(on)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");
+    });
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("show"));
+    $("p-"+step).classList.add("show");
+    markDone();renderAll();window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function markDone(){
+    const done={frame:!!S.frame.challenge,diverge:S.sparks.length>0,break:S.ideas.length>0,cover:S.params.length>0,converge:S.ideas.some(i=>tot(i)>0),result:false};
+    document.querySelectorAll("#stepper button").forEach(b=>b.classList.toggle("done",done[b.dataset.s]&&b.dataset.s!==S.step));
+  }
+  document.querySelectorAll("#stepper button").forEach(b=>b.addEventListener("click",()=>show(b.dataset.s)));
+  $("navPrev").addEventListener("click",()=>{const i=STEPS.indexOf(S.step);if(i>0)show(STEPS[i-1]);});
+  $("navNext").addEventListener("click",()=>{const i=STEPS.indexOf(S.step);if(i<STEPS.length-1)show(STEPS[i+1]);});
+
+  /* ---------- header ---------- */
+  $("projName").value=S.name;
+  $("projName").addEventListener("input",e=>{S.name=e.target.value.slice(0,120);save();});
+  $("engineSel").value=S.engine;
+  $("engineSel").addEventListener("change",e=>{S.engine=e.target.value;save();renderDiverge();});
+  $("resetBtn").addEventListener("click",()=>{if(confirm("Clear this whole project?")){S=blank();save();$("projName").value="";$("engineSel").value="offline";show("frame");toast("Project cleared.");}});
+
+  /* ---------- helpers ---------- */
+  function addSpark(w){
+    w=(w||"").trim().slice(0,LIMITS.term);if(!w)return false;
+    if(S.sparks.length>=LIMITS.sparks){toast("Spark pool is full ("+LIMITS.sparks+") — remove some first.");return false;}
+    if(!S.sparks.some(s=>s.toLowerCase()===w.toLowerCase())){S.sparks.push(w);save();renderAll();return true;}
+    return false;
+  }
+  function addIdea(text,source){
+    text=(text||"").trim().slice(0,LIMITS.text);if(!text)return;
+    if(S.ideas.length>=LIMITS.ideas){toast("Idea list is full ("+LIMITS.ideas+") — remove some first.");return;}
+    S.ideas.push({id:uid(),text,source:(source||"manual").slice(0,120),scores:{}});save();renderAll();
+  }
+  function tot(i){return CRITERIA.reduce((a,[k])=>a+(i.scores[k]||0),0);}
+
+  /* ---------- FRAME ---------- */
+  function bindFrame(){
+    [["f-challenge","challenge"],["f-who","who"],["f-constraints","constraints"],["f-hmw","hmw"]].forEach(([id,k])=>{
+      const el=$(id);el.value=S.frame[k]||"";
+      el.addEventListener("input",()=>{S.frame[k]=el.value.slice(0,LIMITS.text);save();});
+    });
+    $("f-suggestHmw").addEventListener("click",()=>{
+      const c=S.frame.challenge.trim();const box=$("f-hmwSug");box.innerHTML="";
+      if(!c){box.innerHTML="<span class='empty'>Write the challenge first.</span>";return;}
+      const core=c.replace(/[.?!]+$/,"");
+      const templates=[
+        "How might we remove the cause of: "+core+"?",
+        "How might we make the opposite of this true?",
+        "How might we turn this problem into a benefit for "+(S.frame.who||"the user")+"?",
+        "How might we solve this with half the effort?"
+      ];
+      templates.forEach(t=>{const c2=document.createElement("span");c2.className="chip sug";c2.textContent=t;c2.onclick=()=>{S.frame.hmw=t;$("f-hmw").value=t;save();};box.appendChild(c2);});
+    });
+    $("f-lock").addEventListener("click",()=>{
+      if(!S.frame.challenge.trim()){toast("Write the challenge first.");$("f-challenge").focus();return;}
+      const STOP=new Set("a an the of for to and or in on with into from at by as is are be we our you your it that this how might can could new make more less than them they".split(" "));
+      const text=(S.frame.challenge+" "+S.frame.hmw+" "+S.frame.who).toLowerCase();
+      const words=[...new Set(text.replace(/[^a-z\s-]/g," ").split(/\s+/).filter(w=>w.length>3&&!STOP.has(w)))].slice(0,10);
+      words.forEach(w=>{if(!S.frame.seeds.includes(w)&&S.frame.seeds.length<LIMITS.seeds)S.frame.seeds.push(w);});
+      save();renderFrameSeeds();show("diverge");
+    });
+    $("f-seedAdd").addEventListener("click",()=>{
+      const v=$("f-seedInput").value.trim().slice(0,LIMITS.term);
+      if(!v)return;
+      if(S.frame.seeds.length>=LIMITS.seeds){toast("Seed list is full ("+LIMITS.seeds+").");return;}
+      if(!S.frame.seeds.includes(v)){S.frame.seeds.push(v);$("f-seedInput").value="";save();renderAll();}
+    });
+    $("f-seedInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("f-seedAdd").click();}});
+  }
+  function renderFrameSeeds(){
+    const box=$("f-seeds");if(!S.frame.seeds.length){box.innerHTML="<span class='empty'>No seed terms yet.</span>";return;}
+    box.innerHTML="";S.frame.seeds.forEach(w=>{
+      const c=document.createElement("span");c.className="chip on";
+      c.innerHTML=esc(w)+" <span class='x' role='button' aria-label='Remove "+esc(w)+"'>×</span>";
+      c.querySelector(".x").onclick=()=>{S.frame.seeds=S.frame.seeds.filter(x=>x!==w);save();renderAll();};
+      box.appendChild(c);
+    });
+  }
+
+  /* ---------- DIVERGE ---------- */
+  function renderDiverge(){
+    const sb=$("d-seeds");
+    if(!S.frame.seeds.length){sb.innerHTML="<span class='empty'>Set a frame in step 0 first.</span>";}
+    else{sb.innerHTML="";S.frame.seeds.forEach(w=>{const c=document.createElement("span");c.className="chip";c.textContent=w;sb.appendChild(c);});}
+    const area=$("d-engineArea");area.innerHTML="";
+    const banner=$("d-banner");
+    if(S.engine==="offline"){
+      banner.innerHTML="<div class='banner'>Offline engine: you supply the associations using the prompts below. Private and works with no connection.</div>";
+      if(S.frame.seeds.length){
+        const facets=["a kind or example of","a part of","a feeling linked to","an action you do with","a place tied to","an opposite of"];
+        const wrap=document.createElement("div");
+        wrap.innerHTML="<h3>Prompts — answer for any seed term, add answers as sparks</h3>";
+        facets.forEach(f=>{const d=document.createElement("div");d.className="prompt";d.innerHTML="<b>"+esc(f)+"</b> … one of your seed terms?";wrap.appendChild(d);});
+        area.appendChild(wrap);
+      }
+    } else if(S.engine==="open"){
+      banner.innerHTML="<div class='banner'>Open-data engine: tap a seed term to fetch associated concepts from the free Datamuse service (needs a connection).</div>";
+      const wrap=document.createElement("div");wrap.innerHTML="<h3>Fetch associations</h3>";
+      const rowx=document.createElement("div");rowx.className="chips";
+      S.frame.seeds.forEach(w=>{const c=document.createElement("span");c.className="chip sug";c.textContent="↻ "+w;c.setAttribute("role","button");c.tabIndex=0;c.onclick=()=>fetchSugs(w);c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fetchSugs(w);}};rowx.appendChild(c);});
+      wrap.appendChild(rowx);
+      const out=document.createElement("div");out.id="d-sugs";out.className="chips";out.setAttribute("aria-live","polite");wrap.appendChild(out);
+      area.appendChild(wrap);
+    } else {
+      banner.innerHTML="<div class='banner'>AI bridge: copy the prompt into any AI, then paste its list back. No API key needed.</div>";
+      const prompt="List 20 single words or short concepts strongly associated with these terms: "+(S.frame.seeds.join(", ")||"(your seeds)")+". Context: "+(S.frame.challenge||"")+". Reply as a comma-separated list only.";
+      const wrap=document.createElement("div");
+      wrap.innerHTML="<h3>AI prompt</h3>";
+      const pa=document.createElement("textarea");pa.value=prompt;pa.readOnly=true;pa.style.minHeight="64px";pa.setAttribute("aria-label","AI prompt to copy");wrap.appendChild(pa);
+      const cp=document.createElement("button");cp.className="btn ghost sm";cp.textContent="Copy prompt";cp.style.marginTop="6px";
+      cp.onclick=()=>copyText(prompt,cp,"Copy prompt");
+      wrap.appendChild(cp);
+      const lab=document.createElement("label");lab.className="fld";lab.textContent="Paste the AI's list here:";lab.htmlFor="d-aiPaste";wrap.appendChild(lab);
+      const ta=document.createElement("textarea");ta.id="d-aiPaste";ta.placeholder="apple, orchard, harvest, …";wrap.appendChild(ta);
+      const add=document.createElement("button");add.className="btn sm";add.textContent="Add these as sparks";add.style.marginTop="6px";
+      add.onclick=()=>{
+        const items=ta.value.split(/[,\n;]+/).map(x=>x.trim()).filter(Boolean);
+        let n=0;items.forEach(x=>{if(addSpark(x))n++;});
+        const ta2=$("d-aiPaste");if(ta2)ta2.value="";
+        if(items.length)toast(n?("Added "+n+" spark"+(n===1?"":"s")+"."):"Nothing new to add.");
+      };
+      wrap.appendChild(add);
+      area.appendChild(wrap);
+    }
+    renderSparks();
+  }
+  async function fetchSugs(term){
+    const out=$("d-sugs");if(out)out.innerHTML="<span class='hint'>Fetching…</span>";
+    const res=await Engine.associate(term);
+    const out2=$("d-sugs");if(!out2)return;
+    out2.innerHTML="";
+    if(res&&res.error){out2.innerHTML="<span class='empty'>"+esc(res.error)+"</span>";return;}
+    if(!res||!res.length){out2.innerHTML="<span class='empty'>No suggestions returned.</span>";return;}
+    res.forEach(w=>{const c=document.createElement("span");c.className="chip sug";c.textContent="+ "+w;c.setAttribute("role","button");c.tabIndex=0;
+      const act=()=>{addSpark(w);const o=$("d-sugs");if(o){const cc=[...o.children].find(x=>x.textContent==="+ "+w);if(cc)cc.classList.add("on");}};
+      c.onclick=act;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};
+      out2.appendChild(c);});
+  }
+  function renderSparks(){
+    const box=$("d-sparks");$("d-count").textContent=S.sparks.length?"("+S.sparks.length+")":"";
+    if(!S.sparks.length){box.innerHTML="<span class='empty'>Empty — add sparks above.</span>";return;}
+    box.innerHTML="";S.sparks.forEach(w=>{
+      const c=document.createElement("span");c.className="chip on";
+      c.innerHTML=esc(w)+" <span class='x' role='button' aria-label='Remove "+esc(w)+"'>×</span>";
+      c.querySelector(".x").onclick=()=>{S.sparks=S.sparks.filter(x=>x!==w);save();renderAll();};
+      box.appendChild(c);
+    });
+  }
+  function bindDiverge(){
+    $("d-sparkAdd").addEventListener("click",()=>{addSpark($("d-sparkInput").value);$("d-sparkInput").value="";});
+    $("d-sparkInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("d-sparkAdd").click();}});
+  }
+
+  /* ---------- BREAK ---------- */
+  let pair=[null,null];
+  function bindBreak(){
+    $("b-collide").addEventListener("click",()=>{
+      if(S.sparks.length<2){toast("Add at least two sparks in step 1 first.");return;}
+      let a,b;do{a=S.sparks[Math.floor(Math.random()*S.sparks.length)];b=S.sparks[Math.floor(Math.random()*S.sparks.length)];}while(a===b);
+      pair=[a,b];$("b-pair").innerHTML="<b style='color:var(--heading)'>"+esc(a)+" × "+esc(b)+"</b> — what does combining these suggest?";
+    });
+    $("b-collideAdd").addEventListener("click",()=>{const t=$("b-collideIdea").value;if(!t.trim())return;addIdea(t,pair[0]&&pair[1]?(pair[0]+"×"+pair[1]):"collision");$("b-collideIdea").value="";});
+  }
+  function renderBreak(){
+    const pv=$("b-provs");pv.innerHTML="";
+    PROVS.forEach(([k,q],i)=>{
+      const d=document.createElement("div");d.className="prompt";
+      d.innerHTML="<span class='pill'>"+esc(k)+"</span>"+esc(q);
+      const ta=document.createElement("textarea");ta.placeholder="idea…";ta.style.marginTop="6px";ta.id="b-prov"+i;ta.setAttribute("aria-label",k+" idea");
+      const bt=document.createElement("button");bt.className="btn sm";bt.style.marginTop="6px";bt.textContent="+ Capture";
+      bt.onclick=()=>{addIdea(ta.value,k.toLowerCase());ta.value="";};
+      d.appendChild(ta);d.appendChild(bt);pv.appendChild(d);
+    });
+    renderIdeaList("b-ideas","b-count");
+  }
+  function renderIdeaList(boxId,countId){
+    const box=$(boxId);if(countId)$(countId).textContent=S.ideas.length?"("+S.ideas.length+")":"";
+    if(!S.ideas.length){box.innerHTML="<span class='empty'>No ideas captured yet.</span>";return;}
+    box.innerHTML="";S.ideas.forEach(it=>{
+      const d=document.createElement("div");d.className="idea";
+      d.innerHTML="<h4>"+esc(it.text)+"</h4><div class='src'>via "+esc(it.source)+" · <a href='#' data-id='"+esc(it.id)+"' aria-label='Remove idea'>remove</a></div>";
+      box.appendChild(d);
+    });
+    box.querySelectorAll("a[data-id]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();S.ideas=S.ideas.filter(x=>x.id!==a.dataset.id);save();renderAll();}));
+  }
+
+  /* ---------- COVER ---------- */
+  function bindCover(){
+    $("c-paramAdd").addEventListener("click",()=>{
+      const v=$("c-paramInput").value.trim().slice(0,LIMITS.term);
+      if(!v)return;
+      if(S.params.length>=LIMITS.params){toast("Dimension list is full ("+LIMITS.params+").");return;}
+      S.params.push({id:uid(),name:v,opts:[]});$("c-paramInput").value="";save();renderCover();
+    });
+    $("c-paramInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("c-paramAdd").click();}});
+  }
+  function renderCover(){
+    const box=$("c-params");
+    if(!S.params.length){box.innerHTML="<span class='empty'>No dimensions yet.</span>";}
+    else{
+      box.innerHTML="";
+      S.params.forEach(p=>{
+        const d=document.createElement("div");d.className="prompt";
+        d.innerHTML="<b>"+esc(p.name)+"</b> <a href='#' data-del='"+esc(p.id)+"' style='float:right;font-size:12px' aria-label='Remove dimension "+esc(p.name)+"'>remove</a>";
+        const ch=document.createElement("div");ch.className="chips";
+        p.opts.forEach(o=>{
+          const c=document.createElement("span");c.className="chip";
+          c.innerHTML=esc(o)+" <span class='x' role='button' aria-label='Remove "+esc(o)+"'>×</span>";
+          c.querySelector(".x").onclick=()=>{p.opts=p.opts.filter(x=>x!==o);save();renderCover();};
+          ch.appendChild(c);
+        });
+        d.appendChild(ch);
+        const row=document.createElement("div");row.className="row";
+        const inp=document.createElement("input");inp.className="t";inp.placeholder="add option + Enter";inp.style.flex="1";inp.setAttribute("aria-label","Add option to "+p.name);
+        inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const v=inp.value.trim().slice(0,LIMITS.term);
+          if(!v)return;
+          if(p.opts.length>=LIMITS.opts){toast("Option list is full ("+LIMITS.opts+").");return;}
+          if(!p.opts.includes(v)){p.opts.push(v);inp.value="";save();renderCover();}}});
+        row.appendChild(inp);
+        if(S.sparks.length){
+          const sel=document.createElement("select");sel.className="t";sel.style.maxWidth="180px";sel.setAttribute("aria-label","Add option from sparks");
+          const o0=document.createElement("option");o0.value="";o0.textContent="＋ from sparks…";sel.appendChild(o0);
+          S.sparks.filter(s=>!p.opts.includes(s)).forEach(s=>{const o=document.createElement("option");o.value=s;o.textContent=s;sel.appendChild(o);});
+          sel.onchange=()=>{const v=sel.value;if(v&&!p.opts.includes(v)&&p.opts.length<LIMITS.opts){p.opts.push(v);save();renderCover();}};
+          row.appendChild(sel);
+        }
+        d.appendChild(row);box.appendChild(d);
+      });
+      box.querySelectorAll("a[data-del]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();S.params=S.params.filter(x=>x.id!==a.dataset.del);save();renderCover();}));
+    }
+    // combo builder
+    const cb=$("c-combo");
+    const usable=S.params.filter(p=>p.opts.length);
+    if(!usable.length){cb.innerHTML="<span class='empty'>Add at least one dimension with options above.</span>";return;}
+    cb.innerHTML="";
+    const tbl=document.createElement("div");
+    usable.forEach(p=>{
+      const r=document.createElement("div");r.className="row";r.style.margin="6px 0";
+      const lab=document.createElement("span");lab.style.cssText="flex:0 0 120px;font-size:12.5px;font-weight:600;color:var(--muted)";lab.textContent=p.name;
+      const sel=document.createElement("select");sel.className="t";sel.dataset.pid=p.id;sel.style.flex="1";sel.setAttribute("aria-label",p.name);
+      p.opts.forEach(o=>{const op=document.createElement("option");op.value=o;op.textContent=o;sel.appendChild(op);});
+      r.appendChild(lab);r.appendChild(sel);tbl.appendChild(r);
+    });
+    cb.appendChild(tbl);
+    const mk=document.createElement("button");mk.className="btn amber sm";mk.style.marginTop="8px";mk.textContent="+ Add this combination as an idea";
+    mk.onclick=()=>{
+      const parts=[...cb.querySelectorAll("select[data-pid]")].map(s=>{const p=S.params.find(x=>x.id===s.dataset.pid);return(p?p.name:"?")+": "+s.value;});
+      addIdea(parts.join(" / "),"combination");
+    };
+    cb.appendChild(mk);
+    const rnd=document.createElement("button");rnd.className="btn ghost sm";rnd.style.cssText="margin-top:8px;margin-left:8px";rnd.textContent="🎲 Random combination";
+    rnd.onclick=()=>{cb.querySelectorAll("select[data-pid]").forEach(s=>{s.selectedIndex=Math.floor(Math.random()*s.options.length);});};
+    cb.appendChild(rnd);
+  }
+
+  /* ---------- CONVERGE ---------- */
+  function renderConverge(){
+    const box=$("v-ideas");
+    if(!S.ideas.length){box.innerHTML="<span class='empty'>No candidates yet — generate some in steps 2–3.</span>";}
+    else{
+      box.innerHTML="";
+      S.ideas.forEach(it=>{
+        const d=document.createElement("div");d.className="idea";
+        let h="<h4>"+esc(it.text)+"</h4><div class='src'>via "+esc(it.source)+"</div>";
+        CRITERIA.forEach(([k,lab])=>{const v=it.scores[k]||0;h+="<div class='scorerow'><span class='lab'>"+esc(lab)+"</span><input type='range' min='0' max='5' value='"+v+"' data-id='"+esc(it.id)+"' data-k='"+esc(k)+"' aria-label='"+esc(lab)+" score'><span class='scoreval' id='sv-"+esc(it.id)+"-"+esc(k)+"'>"+v+"</span></div>";});
+        h+="<div class='tot'>Total: <span id='tt-"+esc(it.id)+"'>"+tot(it)+"</span> / 25</div>";
+        d.innerHTML=h;box.appendChild(d);
+      });
+      box.querySelectorAll("input[type=range]").forEach(r=>r.addEventListener("input",()=>{
+        const it=S.ideas.find(x=>x.id===r.dataset.id);if(!it)return;
+        it.scores[r.dataset.k]=+r.value;save();
+        const sv=$("sv-"+r.dataset.id+"-"+r.dataset.k);if(sv)sv.textContent=r.value;
+        const tt=$("tt-"+r.dataset.id);if(tt)tt.textContent=tot(it);
+      }));
+    }
+    // contradiction
+    const sel=$("v-cIdea");sel.innerHTML="";
+    if(!S.ideas.length){sel.innerHTML="<option>(no ideas yet)</option>";}
+    else S.ideas.forEach(it=>{const o=document.createElement("option");o.value=it.id;o.textContent=it.text.slice(0,60);sel.appendChild(o);});
+    const rb=$("v-resolvers");rb.innerHTML="";
+    RESOLVERS.forEach(t=>{const d=document.createElement("div");d.className="prompt";d.textContent=t;rb.appendChild(d);});
+  }
+  function bindConverge(){
+    $("v-sort").addEventListener("click",()=>{S.ideas.sort((a,b)=>tot(b)-tot(a));save();renderConverge();renderResult();});
+    $("v-refinedAdd").addEventListener("click",()=>{addIdea($("v-refined").value,"refined");$("v-refined").value="";});
+    $("v-refined").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("v-refinedAdd").click();}});
+  }
+
+  /* ---------- RESULT ---------- */
+  function ranked(){return[...S.ideas].sort((a,b)=>tot(b)-tot(a));}
+  function renderResult(){
+    const box=$("r-preview");const r=ranked();
+    if(!S.frame.challenge&&!r.length){box.innerHTML="<span class='empty'>Nothing yet — work through the brainchurn first.</span>";return;}
+    let h="<div class='card' style='margin:0'><div class='src'>PROJECT</div><h3 style='margin:2px 0'>"+esc(S.name||"Untitled")+"</h3>";
+    h+="<p><b>Challenge:</b> "+esc(S.frame.challenge||"—")+"</p>";
+    if(S.frame.hmw)h+="<p><b>Reframed:</b> "+esc(S.frame.hmw)+"</p>";
+    if(S.frame.who)h+="<p class='hint'>For: "+esc(S.frame.who)+(S.frame.constraints?" · Constraints: "+esc(S.frame.constraints):"")+"</p>";
+    h+="</div>";
+    h+="<h3>Ranked solutions</h3>";
+    if(!r.length)h+="<span class='empty'>No ideas yet.</span>";
+    r.forEach((it,i)=>{h+="<div class='rank"+(i===0&&tot(it)>0?" win":"")+"'><div class='badge'>"+(i+1)+"</div><div><div style='font-weight:600;color:var(--heading)'>"+esc(it.text)+"</div><div class='src'>via "+esc(it.source)+" · score "+tot(it)+"/25</div></div></div>";});
+    box.innerHTML=h;
+  }
+  function reportMd(){
+    const r=ranked();let m="# Brainchurn report — "+(S.name||"Untitled")+"\n\n";
+    m+="## Problem\n\n**Challenge:** "+(S.frame.challenge||"—")+"\n\n";
+    if(S.frame.hmw)m+="**Reframed:** "+S.frame.hmw+"\n\n";
+    if(S.frame.who)m+="**For:** "+S.frame.who+"\n\n";
+    if(S.frame.constraints)m+="**Constraints:** "+S.frame.constraints+"\n\n";
+    m+="## Ranked solutions\n\n";
+    if(!r.length)m+="_none yet_\n";
+    r.forEach((it,i)=>{m+=(i+1)+". **"+it.text+"**  — score "+tot(it)+"/25 (via "+it.source+")\n";});
+    m+="\n## Sparks explored\n\n"+(S.sparks.join(", ")||"—")+"\n";
+    m+="\n## Next steps\n\n- Validate the top solution with real "+(S.frame.who||"users")+".\n- Prototype the cheapest test of its riskiest assumption.\n- Re-run Converge once you have evidence.\n";
+    m+="\n---\n*Generated by Brainchurn. Implements general, non-proprietary creativity techniques.*\n";
+    return m;
+  }
+  function safeName(){return((S.name||"brainchurn").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").slice(0,40))||"brainchurn";}
+  function download(name,text,type){
+    const b=new Blob([text],{type});
+    const url=URL.createObjectURL(b);
+    const a=document.createElement("a");a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+  }
+  function bindResult(){
+    $("r-md").addEventListener("click",()=>download(safeName()+"-report.md",reportMd(),"text/markdown"));
+    $("r-html").addEventListener("click",()=>{
+      const html="<!doctype html><meta charset=utf-8><title>Brainchurn report</title><body style='font:16px/1.6 -apple-system,Segoe UI,Arial;max-width:720px;margin:40px auto;padding:0 16px'>"+
+        reportMd().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^- (.*)$/gm,"<li>$1</li>").replace(/\n{2,}/g,"<p>")+"</body>";
+      download(safeName()+"-report.html",html,"text/html");
+    });
+    $("r-copy").addEventListener("click",()=>copyText(reportMd(),$("r-copy"),"Copy report"));
+  }
+
+  /* ---------- render orchestrator ---------- */
+  function renderAll(){
+    renderFrameSeeds();renderDiverge();renderBreak();renderCover();renderConverge();renderResult();markDone();
+  }
+
+  /* ---------- init ---------- */
+  bindFrame();bindDiverge();bindBreak();bindCover();bindConverge();bindResult();
+  show(S.step||"frame");
+
+  /* ---------- PWA service worker (only when hosted over http/https) ---------- */
+  if("serviceWorker"in navigator&&location.protocol.startsWith("http")){
+    navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
